@@ -36,23 +36,48 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
       return;
     }
 
-    const questions = await get<Question[]>(`/questions?materia=${subject}&limit=${questionCount}`);
+    try {
+      console.log('Buscando questões:', { subject, questionCount });
+      const response = await get<any>(`/questions?materia=${subject}&limit=${questionCount}`);
+      console.log('Resposta da API:', response);
 
-    if (!questions || questions.length === 0) {
+      if (!response) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível conectar ao servidor. Verifique sua conexão.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verificar se a resposta tem o formato esperado
+      const questions = Array.isArray(response) ? response : response.items || [];
+      
+      if (questions.length === 0) {
+        toast({
+          title: "Nenhuma questão encontrada",
+          description: "Não há questões disponíveis para esta matéria.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Questões recebidas:', questions);
+
+      toast({
+        title: "Atividade Criada",
+        description: `Atividade com ${questions.length} questões criada com sucesso!`,
+      });
+
+      navigate("/student/do-activity", { state: { questions } });
+    } catch (error) {
+      console.error('Erro ao criar atividade:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível buscar as questões. Tente novamente.",
+        description: "Ocorreu um erro ao criar a atividade. Tente novamente.",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Atividade Criada",
-      description: `Atividade com ${questions.length} questões criada com sucesso!`,
-    });
-
-    navigate("/student/do-activity", { state: { questions } });
   };
 
   return (
