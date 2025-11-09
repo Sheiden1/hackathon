@@ -18,8 +18,8 @@ const StudentDoActivity = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const questions = location.state?.questions as Question[] || [];
-  
+  const questions = (location.state?.questions as Question[]) || [];
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -41,7 +41,7 @@ const StudentDoActivity = () => {
 
   const handleAnswerClick = (optionIndex: number) => {
     if (isAnswered) return;
-    
+
     setSelectedAnswer(optionIndex);
     setIsAnswered(true);
 
@@ -98,17 +98,13 @@ const StudentDoActivity = () => {
               <span className="text-sm text-muted-foreground">
                 Questão {currentQuestionIndex + 1} de {questions.length}
               </span>
-              <span className="text-sm font-semibold">
-                Acertos: {correctAnswers}
-              </span>
+              <span className="text-sm font-semibold">Acertos: {correctAnswers}</span>
             </div>
             <Progress value={progress} className="h-2" />
           </div>
 
           <Card className="p-8 shadow-hover border-border/50 mb-6">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
-              {currentQuestion.question}
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{currentQuestion.question}</h2>
 
             <div className="space-y-3">
               {currentQuestion.options.map((option, index) => (
@@ -116,7 +112,7 @@ const StudentDoActivity = () => {
                   key={index}
                   onClick={() => handleAnswerClick(index)}
                   variant={getButtonVariant(index)}
-                  className="w-full justify-start text-left h-auto py-4 px-6 transition-all"
+                  className="w-full justify-start break-all text-left h-auto py-4 px-6 transition-all"
                   disabled={isAnswered}
                 >
                   <span className="flex-1">{option}</span>
@@ -128,10 +124,7 @@ const StudentDoActivity = () => {
 
           {isAnswered && (
             <div className="flex justify-end">
-              <Button
-                onClick={handleNextQuestion}
-                className="gap-2"
-              >
+              <Button onClick={handleNextQuestion} className="gap-2">
                 {currentQuestionIndex < questions.length - 1 ? (
                   <>
                     Próxima Questão
