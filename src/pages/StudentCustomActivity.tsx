@@ -61,7 +61,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
   const navigate = useNavigate();
   const { get, loading } = useBackendApi();
   const [subject, setSubject] = useState("");
-  const [questionCount, setQuestionCount] = useState(5);
+  const [questionCount, setQuestionCount] = useState(3);
 
   const subjectMap: Record<string, string> = {
     matematica: "Matemática",
@@ -173,17 +173,18 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
               <Slider
                 id="questionCount"
                 min={1}
-                max={30}
+                max={5}
                 step={1}
                 value={[questionCount]}
                 onValueChange={(value) => setQuestionCount(value[0])}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
                 <span>5</span>
-                <span>10</span>
-                <span>15</span>
-                <span>20</span>
               </div>
             </div>
 

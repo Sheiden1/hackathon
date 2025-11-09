@@ -83,7 +83,20 @@ const StudentDoActivity = () => {
   };
 
   const submitActivity = async () => {
-    if (!user?.id || !activityId) {
+    const score = (correctAnswers / questions.length) * 100;
+
+    // Se não há activityId, é uma atividade personalizada (não salva no banco)
+    if (!activityId) {
+      toast({
+        title: "Atividade Concluída!",
+        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${Math.round(score)}%)`,
+      });
+      navigate("/student");
+      return;
+    }
+
+    // Se há activityId, salvar no banco de dados
+    if (!user?.id) {
       toast({
         title: "Erro",
         description: "Não foi possível salvar a submissão.",
@@ -94,8 +107,6 @@ const StudentDoActivity = () => {
     }
 
     try {
-      const score = (correctAnswers / questions.length) * 100;
-
       // Criar submissão
       const { data: submission, error: submissionError } = await supabase
         .from("activity_submissions")
