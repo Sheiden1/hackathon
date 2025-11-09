@@ -23,13 +23,18 @@ const AddQuestion = () => {
     if (!generateData.file) {
       toast({
         title: "Erro",
-        description: "Por favor, selecione um arquivo.",
+        description: "Por favor, selecione um arquivo PDF.",
         variant: "destructive",
       });
       return;
     }
 
     try {
+      console.log("=== INÍCIO DO PROCESSO ===");
+      console.log("Arquivo selecionado:", generateData.file.name);
+      console.log("Tamanho do arquivo:", generateData.file.size, "bytes");
+      console.log("Tipo do arquivo:", generateData.file.type);
+
       toast({
         title: "Enviando arquivo",
         description: "Aguarde enquanto enviamos o arquivo...",
@@ -43,7 +48,9 @@ const AddQuestion = () => {
       formData.append("blob_path", blobPath);
       formData.append("bucket", "materiais-hackaton");
 
-      console.log("Enviando arquivo:", blobPath);
+      console.log("=== INICIANDO UPLOAD ===");
+      console.log("Blob path:", blobPath);
+      console.log("URL de upload:", "https://backend-hackaton-2-739886072483.europe-west1.run.app/storage/gcs/upload");
 
       const uploadResponse = await fetch(
         "https://backend-hackaton-2-739886072483.europe-west1.run.app/storage/gcs/upload",
@@ -53,13 +60,19 @@ const AddQuestion = () => {
         },
       );
 
+      console.log("Status do upload:", uploadResponse.status);
+      console.log("Headers do upload:", Object.fromEntries(uploadResponse.headers.entries()));
+
       if (!uploadResponse.ok) {
         const errorText = await uploadResponse.text();
-        console.error("Erro no upload:", errorText);
-        throw new Error("Erro ao fazer upload do arquivo");
+        console.error("=== ERRO NO UPLOAD ===");
+        console.error("Status:", uploadResponse.status);
+        console.error("Response:", errorText);
+        throw new Error(`Erro ao fazer upload do arquivo (${uploadResponse.status}): ${errorText}`);
       }
 
       const uploadResult = await uploadResponse.json();
+      console.log("=== UPLOAD CONCLUÍDO ===");
       console.log("Upload result:", uploadResult);
 
       toast({
@@ -82,7 +95,9 @@ const AddQuestion = () => {
         tamanho_lote: 5,
       };
 
-      console.log("Request body:", requestBody);
+      console.log("=== INICIANDO GERAÇÃO DE QUESTÕES ===");
+      console.log("Request body:", JSON.stringify(requestBody, null, 2));
+      console.log("URL de geração:", "https://backend-hackaton-2-739886072483.europe-west1.run.app/question-generation/complete");
 
       const generateResponse = await fetch(
         "https://backend-hackaton-2-739886072483.europe-west1.run.app/question-generation/complete",
@@ -95,18 +110,24 @@ const AddQuestion = () => {
         },
       );
 
+      console.log("Status da geração:", generateResponse.status);
+      console.log("Headers da geração:", Object.fromEntries(generateResponse.headers.entries()));
+
       if (!generateResponse.ok) {
         const errorText = await generateResponse.text();
-        console.error("Erro na geração:", errorText);
-        throw new Error(`Erro ao gerar questões: ${errorText}`);
+        console.error("=== ERRO NA GERAÇÃO ===");
+        console.error("Status:", generateResponse.status);
+        console.error("Response:", errorText);
+        throw new Error(`Erro ao gerar questões (${generateResponse.status}): ${errorText}`);
       }
 
       const result = await generateResponse.json();
+      console.log("=== GERAÇÃO CONCLUÍDA ===");
       console.log("Generate result:", result);
 
       toast({
         title: "Questões geradas com sucesso!",
-        description: `${result.quantidade} questões foram adicionadas ao banco.`,
+        description: `${result.quantidade || generateData.numberOfQuestions} questões foram adicionadas ao banco.`,
       });
 
       setGenerateData({
@@ -117,11 +138,16 @@ const AddQuestion = () => {
       // Reset input file
       const fileInput = document.getElementById("file") as HTMLInputElement;
       if (fileInput) fileInput.value = "";
+
+      console.log("=== PROCESSO FINALIZADO COM SUCESSO ===");
     } catch (error) {
+      console.error("=== ERRO CRÍTICO ===");
       console.error("Erro completo:", error);
+      console.error("Stack trace:", error instanceof Error ? error.stack : "N/A");
+      
       toast({
         title: "Erro ao processar arquivo",
-        description: error instanceof Error ? error.message : "Tente novamente mais tarde.",
+        description: error instanceof Error ? error.message : "Erro desconhecido. Tente novamente mais tarde.",
         variant: "destructive",
       });
     }

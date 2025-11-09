@@ -3,43 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, FileUp, Database } from "lucide-react";
+import { GraduationCap, Plus, LogOut, Sparkles, Database } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
 
 const TeacherDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const menuOptions = [
-    {
-      id: "add-file",
-      title: "Adicionar Arquivo",
-      description: "Envie materiais e documentos",
-      icon: FileUp,
-      gradient: "bg-gradient-accent",
-    },
     {
       id: "add-question",
       title: "Adicionar Questão",
       description: "Monte seu banco de questões para provas e exercícios",
       icon: Plus,
       gradient: "bg-gradient-primary",
-    },
-    {
-      id: "create-activity",
-      title: "Elaborar Atividade",
-      description: "Crie novas atividades e trabalhos para seus alunos",
-      icon: FileEdit,
-      gradient: "bg-gradient-secondary",
-    },
-    {
-      id: "correct-assessment",
-      title: "Avaliar Atividades",
-      description: "Revise e corrija as avaliações enviadas pelos alunos",
-      icon: CheckCircle,
-      gradient: "bg-gradient-to-br from-green-500 via-emerald-400 to-green-500",
     },
     {
       id: "populate-questions",
@@ -50,27 +27,8 @@ const TeacherDashboard = () => {
     },
   ];
 
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log("File selected:", file.name);
-      // Handle file upload logic here
-    }
-  };
-
   const handleOptionClick = (optionId: string) => {
-    if (optionId === "add-file") {
-      handleFileClick();
-      return;
-    }
-
     const routes = {
-      "correct-assessment": "/teacher/correct-assessment",
-      "create-activity": "/teacher/create-activity",
       "add-question": "/teacher/add-question",
       "populate-questions": "/teacher/populate-questions"
     };
@@ -169,15 +127,6 @@ const TeacherDashboard = () => {
             <Sparkles className="h-12 w-12 text-white/80 animate-bounce-subtle" />
           </div>
         </Card>
-
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="hidden"
-          onChange={handleFileChange}
-          accept=".pdf,.doc,.docx,.txt"
-        />
 
         {/* Menu Options - Grid 2x2 */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
