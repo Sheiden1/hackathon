@@ -1,258 +1,132 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, FileEdit, Users } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useBackendApi } from "@/hooks/useBackendApi";
 
-interface Topic {
+interface Question {
   id: string;
-  name: string;
-  subject_id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  subject: string;
 }
 
 const CreateActivity = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    type: "",
-    class: "",
-    numberOfQuestions: 10,
-  });
+  const { get, loading } = useBackendApi();
+  const [subject, setSubject] = useState("");
+  const [questionCount, setQuestionCount] = useState(5);
 
-  useEffect(() => {
-    const fetchTopics = async () => {
-      if (!user?.subject) return;
-
-      const { data, error } = await supabase
-        .from("topics")
-        .select("*")
-        .eq("subject_id", user.subject);
-
-      if (error) {
-        console.error("Error fetching topics:", error);
-        return;
-      }
-
-      setTopics(data || []);
-    };
-
-    fetchTopics();
-  }, [user]);
-
-  const handleTopicToggle = (topicId: string) => {
-    setSelectedTopics(prev =>
-      prev.includes(topicId)
-        ? prev.filter(id => id !== topicId)
-        : [...prev, topicId]
-    );
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!subject || !questionCount) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione a matéria e quantidade de questões.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const questions = await get<Question[]>(`/questions?materia=${subject}&limit=${questionCount}`);
+
+    if (!questions || questions.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível buscar as questões. Tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
-      title: "Atividade criada com sucesso",
-      description: `Atividade com ${formData.numberOfQuestions} questões criada para os alunos.`,
+      title: "Atividade Criada",
+      description: `Atividade com ${questions.length} questões criada com sucesso!`,
     });
-    
-    setFormData({
-      title: "",
-      description: "",
-      type: "",
-      class: "",
-      numberOfQuestions: 10,
-    });
-    setSelectedTopics([]);
+
+    // Aqui você pode navegar para uma página de visualização ou edição das questões
+    // navigate("/teacher/preview-activity", { state: { questions } });
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Decorative background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse-soft" />
-        <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" />
+        <div className="absolute top-20 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse-soft" />
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" />
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-12 animate-fade-in">
-          <Button
-            onClick={() => navigate("/teacher")}
-            variant="outline"
-            size="icon"
-            className="hover:scale-105 transition-all"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-4xl font-display font-bold text-foreground">
-              Elaborar Atividade
-            </h1>
-            <p className="text-muted-foreground font-medium mt-1">
-              Crie novas atividades e trabalhos para seus alunos
-            </p>
-          </div>
-        </div>
+        <Button 
+          onClick={() => navigate("/teacher")} 
+          variant="outline" 
+          className="mb-6 hover:scale-105 transition-all"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar ao Dashboard
+        </Button>
 
-        {/* Form */}
-        <Card className="p-8 border border-border/50 shadow-card animate-scale-up">
-          <div className="mb-6">
-            <div className="inline-flex p-4 rounded-2xl bg-gradient-secondary shadow-card mb-4">
-              <FileEdit className="h-8 w-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-              Nova Atividade
-            </h2>
-            <p className="text-muted-foreground">
-              Preencha os detalhes da atividade que deseja criar
-            </p>
-          </div>
+        <Card className="p-8 shadow-hover border-border/50">
+          <h1 className="text-3xl font-display font-bold text-foreground mb-2">Elaborar Atividade Personalizada</h1>
+          <p className="text-muted-foreground mb-8">Escolha a matéria e quantidade de questões para a atividade</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-foreground font-medium">
-                Título da Atividade
-              </Label>
-              <Input
-                id="title"
-                type="text"
-                placeholder="Ex: Prova de Matemática - Capítulo 5"
-                className="h-12 bg-muted/30 border-border focus:ring-2 focus:ring-secondary"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-foreground font-medium">
-                Descrição
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Descreva os objetivos e instruções da atividade..."
-                className="min-h-[150px] bg-muted/30 border-border focus:ring-2 focus:ring-secondary"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type" className="text-foreground font-medium">
-                Tipo de Atividade
-              </Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger className="h-12 bg-muted/30 border-border">
-                  <SelectValue placeholder="Selecione o tipo" />
+              <Label htmlFor="subject">Matéria</Label>
+              <Select value={subject} onValueChange={setSubject} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a matéria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="prova">Prova</SelectItem>
-                  <SelectItem value="exercicio">Exercício</SelectItem>
+                  <SelectItem value="matematica">Matemática</SelectItem>
+                  <SelectItem value="portugues">Português</SelectItem>
+                  <SelectItem value="ciencias">Ciências</SelectItem>
+                  <SelectItem value="historia">História</SelectItem>
+                  <SelectItem value="geografia">Geografia</SelectItem>
+                  <SelectItem value="ingles">Inglês</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="class" className="text-foreground font-medium flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                Turma
-              </Label>
-              <Select value={formData.class} onValueChange={(value) => setFormData({ ...formData, class: value })}>
-                <SelectTrigger className="h-12 bg-muted/30 border-border">
-                  <SelectValue placeholder="Selecione a turma" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="9a">9º Ano A</SelectItem>
-                  <SelectItem value="9b">9º Ano B</SelectItem>
-                  <SelectItem value="1a">1º Médio A</SelectItem>
-                  <SelectItem value="1b">1º Médio B</SelectItem>
-                  <SelectItem value="2a">2º Médio A</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="numberOfQuestions" className="text-foreground font-medium">
-                Número de Questões
-              </Label>
-              <Input
-                id="numberOfQuestions"
-                type="number"
-                min="1"
-                max="50"
-                placeholder="Ex: 10"
-                className="h-12 bg-muted/30 border-border focus:ring-2 focus:ring-secondary"
-                value={formData.numberOfQuestions}
-                onChange={(e) => setFormData({ ...formData, numberOfQuestions: parseInt(e.target.value) || 10 })}
-                required
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="questionCount">Quantidade de Questões</Label>
+                <span className="text-2xl font-bold text-primary">{questionCount}</span>
+              </div>
+              <Slider
+                id="questionCount"
+                min={1}
+                max={30}
+                step={1}
+                value={[questionCount]}
+                onValueChange={(value) => setQuestionCount(value[0])}
+                className="w-full"
               />
-              <p className="text-sm text-muted-foreground">
-                Defina quantas questões a atividade terá (1-50)
-              </p>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>1</span>
+                <span>10</span>
+                <span>20</span>
+                <span>30</span>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-foreground font-medium">
-                Tópicos Específicos (opcional)
-              </Label>
-              <p className="text-sm text-muted-foreground mb-3">
-                Selecione os tópicos para focar a atividade. Se nenhum for escolhido, todos os tópicos da sua disciplina serão considerados.
-              </p>
-              {topics.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-muted/30 rounded-lg border border-border">
-                  {topics.map((topic) => (
-                    <div key={topic.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={topic.id}
-                        checked={selectedTopics.includes(topic.id)}
-                        onCheckedChange={() => handleTopicToggle(topic.id)}
-                      />
-                      <label
-                        htmlFor={topic.id}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        {topic.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Carregando Questões...
+                </>
               ) : (
-                <div className="p-4 bg-muted/30 rounded-lg border border-border text-center text-muted-foreground">
-                  Nenhum tópico disponível para sua disciplina
-                </div>
+                "Criar Atividade"
               )}
-            </div>
-
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/teacher")}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-gradient-secondary hover:shadow-hover text-white"
-              >
-                Criar Atividade
-              </Button>
-            </div>
+            </Button>
           </form>
         </Card>
       </div>
