@@ -112,10 +112,10 @@ const StudentDoActivity = () => {
                   key={index}
                   onClick={() => handleAnswerClick(index)}
                   variant={getButtonVariant(index)}
-                  className="w-full justify-start text-left h-auto py-4 px-6 transition-all"
+                  className="w-full justify-start text-left h-auto py-4 px-6 transition-all whitespace-normal break-words"
                   disabled={isAnswered}
                 >
-                  <span className="flex-1">{option}</span>
+                  <span className="flex-1 break-words">{option}</span>
                   {getButtonIcon(index)}
                 </Button>
               ))}
