@@ -86,7 +86,7 @@ const AddQuestion = () => {
         // 1. Upload do PDF para o Cloud Storage
         const formData = new FormData();
         formData.append("file", generateData.file);
-        formData.append("blob_path", `${Date.now()}_${generateData.file.name}`);
+        formData.append("blob_path", generateData.file.name);
         formData.append("bucket", "materiais-hackaton");
 
         const uploadResponse = await fetch(
