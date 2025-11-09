@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,23 +8,64 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, FileEdit, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import { Checkbox } from "@/components/ui/checkbox";
+
+interface Topic {
+  id: string;
+  name: string;
+  subject_id: string;
+}
 
 const CreateActivity = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     type: "",
     class: "",
+    numberOfQuestions: 10,
   });
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      if (!user?.subject) return;
+
+      const { data, error } = await supabase
+        .from("topics")
+        .select("*")
+        .eq("subject_id", user.subject);
+
+      if (error) {
+        console.error("Error fetching topics:", error);
+        return;
+      }
+
+      setTopics(data || []);
+    };
+
+    fetchTopics();
+  }, [user]);
+
+  const handleTopicToggle = (topicId: string) => {
+    setSelectedTopics(prev =>
+      prev.includes(topicId)
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     toast({
       title: "Atividade criada com sucesso",
-      description: "A atividade foi disponibilizada para os alunos.",
+      description: `Atividade com ${formData.numberOfQuestions} questões criada para os alunos.`,
     });
     
     setFormData({
@@ -32,7 +73,9 @@ const CreateActivity = () => {
       description: "",
       type: "",
       class: "",
+      numberOfQuestions: 10,
     });
+    setSelectedTopics([]);
   };
 
   return (
@@ -140,6 +183,58 @@ const CreateActivity = () => {
                   <SelectItem value="2a">2º Médio A</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="numberOfQuestions" className="text-foreground font-medium">
+                Número de Questões
+              </Label>
+              <Input
+                id="numberOfQuestions"
+                type="number"
+                min="1"
+                max="50"
+                placeholder="Ex: 10"
+                className="h-12 bg-muted/30 border-border focus:ring-2 focus:ring-secondary"
+                value={formData.numberOfQuestions}
+                onChange={(e) => setFormData({ ...formData, numberOfQuestions: parseInt(e.target.value) || 10 })}
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                Defina quantas questões a atividade terá (1-50)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-foreground font-medium">
+                Tópicos Específicos (opcional)
+              </Label>
+              <p className="text-sm text-muted-foreground mb-3">
+                Selecione os tópicos para focar a atividade. Se nenhum for escolhido, todos os tópicos da sua disciplina serão considerados.
+              </p>
+              {topics.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-muted/30 rounded-lg border border-border">
+                  {topics.map((topic) => (
+                    <div key={topic.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={topic.id}
+                        checked={selectedTopics.includes(topic.id)}
+                        onCheckedChange={() => handleTopicToggle(topic.id)}
+                      />
+                      <label
+                        htmlFor={topic.id}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {topic.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 bg-muted/30 rounded-lg border border-border text-center text-muted-foreground">
+                  Nenhum tópico disponível para sua disciplina
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4 pt-4">

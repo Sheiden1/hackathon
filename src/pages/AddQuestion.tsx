@@ -145,7 +145,7 @@ const AddQuestion = () => {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Gerar questão
+              Gerar questões
             </button>
           </div>
 

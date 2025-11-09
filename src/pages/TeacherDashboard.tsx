@@ -3,23 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, Upload } from "lucide-react";
+import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, FileUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useRef } from "react";
 
 const TeacherDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const menuOptions = [
     {
-      id: "correct-assessment",
-      title: "Corrigir Avaliação",
-      description: "Revise e corrija as avaliações enviadas pelos alunos",
-      icon: CheckCircle,
+      id: "add-file",
+      title: "Adicionar Arquivo",
+      description: "Envie materiais e documentos",
+      icon: FileUp,
+      gradient: "bg-gradient-accent",
+    },
+    {
+      id: "add-question",
+      title: "Adicionar Questão",
+      description: "Monte seu banco de questões para provas e exercícios",
+      icon: Plus,
       gradient: "bg-gradient-primary",
     },
     {
@@ -30,15 +35,32 @@ const TeacherDashboard = () => {
       gradient: "bg-gradient-secondary",
     },
     {
-      id: "add-question",
-      title: "Adicionar Questão",
-      description: "Monte seu banco de questões para provas e exercícios",
-      icon: Plus,
-      gradient: "bg-gradient-accent",
+      id: "correct-assessment",
+      title: "Avaliar Atividades",
+      description: "Revise e corrija as avaliações enviadas pelos alunos",
+      icon: CheckCircle,
+      gradient: "bg-gradient-to-br from-green-500 via-emerald-400 to-green-500",
     },
   ];
 
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log("File selected:", file.name);
+      // Handle file upload logic here
+    }
+  };
+
   const handleOptionClick = (optionId: string) => {
+    if (optionId === "add-file") {
+      handleFileClick();
+      return;
+    }
+
     const routes = {
       "correct-assessment": "/teacher/correct-assessment",
       "create-activity": "/teacher/create-activity",
@@ -148,40 +170,17 @@ const TeacherDashboard = () => {
           </div>
         </Card>
 
-        {/* File Upload Section */}
-        <Card className="p-8 mb-8 border border-border/50 shadow-card animate-fade-in">
-          <div className="flex items-start gap-4">
-            <div className="inline-flex p-4 rounded-2xl bg-gradient-accent shadow-card">
-              <Upload className="h-8 w-8 text-white" />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div>
-                <h3 className="text-xl font-display font-bold text-foreground mb-2">
-                  Adicionar arquivo
-                </h3>
-                <p className="text-muted-foreground font-medium">
-                  Envie documentos para gerar questões automaticamente
-                </p>
-              </div>
-              <div className="relative">
-                <Input
-                  id="file-upload"
-                  type="file"
-                  className="w-full cursor-pointer file:cursor-pointer file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                />
-                {selectedFile && (
-                  <p className="text-sm text-muted-foreground font-medium mt-2 truncate">
-                    Arquivo selecionado: {selectedFile.name}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleFileChange}
+          accept=".pdf,.doc,.docx,.txt"
+        />
 
-        {/* Menu Options */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        {/* Menu Options - Grid 2x2 */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           {menuOptions.map((option, index) => (
             <Card
               key={option.id}
