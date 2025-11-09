@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Fun Educational Platform Design System - Azul, Verde, Amarelo */
+    --background: 210 100% 97%;
+    --foreground: 220 30% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 20%;
+
+    /* Primary: Azul Alegre (Confiança & Aprendizado) */
+    --primary: 215 95% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 215 95% 50%;
+    --primary-light: 215 95% 85%;
+
+    /* Secondary: Verde Vibrante (Crescimento & Sucesso) */
+    --secondary: 150 70% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 150 70% 45%;
+    --secondary-light: 150 70% 85%;
+
+    /* Accent: Amarelo Energia (Destaque & Motivação) */
+    --accent: 45 100% 58%;
+    --accent-foreground: 220 30% 20%;
+    --accent-hover: 45 100% 52%;
+    --accent-light: 45 100% 90%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 220 20% 55%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 30% 90%;
+    --input: 215 30% 92%;
+    --ring: 215 95% 55%;
+
+    --radius: 1.25rem;
+
+    /* Gradientes Divertidos */
+    --gradient-primary: linear-gradient(135deg, hsl(215 95% 55%), hsl(150 70% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(150 70% 50%), hsl(45 100% 58%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 100% 58%), hsl(215 95% 55%));
+    --gradient-hover: linear-gradient(135deg, hsl(215 95% 50%), hsl(150 70% 45%));
+    --gradient-bg: linear-gradient(180deg, hsl(210 100% 97%), hsl(210 100% 95%));
+    
+    /* Sombras Suaves */
+    --shadow-soft: 0 2px 8px -2px hsl(215 95% 55% / 0.08), 0 4px 16px -4px hsl(215 95% 55% / 0.06);
+    --shadow-medium: 0 4px 16px -4px hsl(215 95% 55% / 0.12), 0 8px 32px -8px hsl(215 95% 55% / 0.08);
+    --shadow-card: 0 2px 12px -3px hsl(215 95% 55% / 0.1), 0 8px 24px -6px hsl(215 95% 55% / 0.06);
+    --shadow-hover: 0 8px 24px -6px hsl(215 95% 55% / 0.16), 0 12px 40px -10px hsl(215 95% 55% / 0.12);
+  }
+
+  .dark {
+    --background: 220 30% 12%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 30% 16%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 30% 16%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 215 95% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 215 95% 65%;
+    --primary-light: 215 95% 25%;
+
+    --secondary: 150 70% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 150 70% 60%;
+    --secondary-light: 150 70% 25%;
+
+    --accent: 45 100% 60%;
+    --accent-foreground: 220 30% 12%;
+    --accent-hover: 45 100% 65%;
+    --accent-light: 45 100% 25%;
+
+    --muted: 220 30% 20%;
+    --muted-foreground: 220 20% 70%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 30% 22%;
+    --input: 220 30% 22%;
+    --ring: 215 95% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-background to-[hsl(210_100%_95%)] text-foreground font-['Inter',_sans-serif] antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-['Poppins',_sans-serif] font-semibold;
+  }
+}
