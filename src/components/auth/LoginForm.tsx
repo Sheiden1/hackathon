@@ -21,7 +21,7 @@ export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    #e.preventDefault();
+    e.preventDefault();
     const { error } = await login(formData.email, formData.password);
     if (error) {
       toast({
