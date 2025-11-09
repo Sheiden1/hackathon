@@ -145,6 +145,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: profileError.message };
       }
 
+      // Fetch the profile to populate user state before navigating
+      await fetchUserProfile(data.user.id);
+      
       navigate(userData.role === "student" ? "/student" : "/teacher");
     }
 

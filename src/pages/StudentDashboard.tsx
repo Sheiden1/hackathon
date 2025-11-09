@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { BookOpen, ClipboardList, Send, LogOut, Sparkles, Plus, FileText, User } from "lucide-react";
-import { PDFFlashcardGenerator } from "@/components/PDFFlashcardGenerator";
+import { BookOpen, ClipboardList, Send, LogOut, Sparkles, Plus } from "lucide-react";
 import StudentCustomActivity from "@/pages/StudentCustomActivity";
 import StudentPendingActivities from "@/pages/StudentPendingActivities";
 import StudentSubmitAssessment from "@/pages/StudentSubmitAssessment";
@@ -15,13 +14,6 @@ const StudentDashboard = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const menuOptions = [
-    {
-      id: "pdf-flashcards",
-      title: "Gerar Flashcards de PDF",
-      description: "Faça upload de um PDF e crie flashcards automaticamente",
-      icon: FileText,
-      gradient: "bg-gradient-accent",
-    },
     {
       id: "custom-activity",
       title: "Criar Atividade Personalizada",
@@ -48,29 +40,6 @@ const StudentDashboard = () => {
   const handleOptionClick = (optionId: string) => {
     setSelectedOption(optionId);
   };
-
-  if (selectedOption === "pdf-flashcards") {
-    return (
-      <div className="min-h-screen relative overflow-hidden">
-        {/* Decorative background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse-soft" />
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" />
-        </div>
-
-        <div className="container mx-auto px-4 py-8">
-          <Button
-            onClick={() => setSelectedOption(null)}
-            variant="outline"
-            className="mb-6 hover:scale-105 transition-all"
-          >
-            Voltar ao Dashboard
-          </Button>
-          <PDFFlashcardGenerator />
-        </div>
-      </div>
-    );
-  }
 
   if (selectedOption === "custom-activity") {
     return <StudentCustomActivity onBack={() => setSelectedOption(null)} />;

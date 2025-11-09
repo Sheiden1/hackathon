@@ -203,7 +203,7 @@ const CorrectAssessment = () => {
                     onClick={() => handleCorrect(assessment.id)}
                     className="bg-gradient-primary hover:shadow-hover text-white"
                   >
-                    Corrigir
+                    Avaliar
                   </Button>
                 </div>
               </Card>
