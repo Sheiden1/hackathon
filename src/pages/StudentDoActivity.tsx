@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useBackendApi } from "@/hooks/useBackendApi";
 
 interface Question {
   id: string;
@@ -18,12 +20,18 @@ const StudentDoActivity = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { post } = useBackendApi();
   const questions = (location.state?.questions as Question[]) || [];
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+
+  const indexToLetter = (index: number): string => {
+    return String.fromCharCode(65 + index); // 0='A', 1='B', 2='C', etc.
+  };
 
   if (!questions || questions.length === 0) {
     return (
@@ -39,7 +47,7 @@ const StudentDoActivity = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-  const handleAnswerClick = (optionIndex: number) => {
+  const handleAnswerClick = async (optionIndex: number) => {
     if (isAnswered) return;
 
     setSelectedAnswer(optionIndex);
@@ -47,6 +55,16 @@ const StudentDoActivity = () => {
 
     if (optionIndex === currentQuestion.correctAnswer) {
       setCorrectAnswers(correctAnswers + 1);
+    }
+
+    // Salvar tentativa no backend
+    if (user?.id) {
+      await post("/attempts", {
+        student_id: user.id,
+        question_id: currentQuestion.id,
+        selected_letter: indexToLetter(optionIndex),
+        materia: currentQuestion.subject,
+      });
     }
   };
 
