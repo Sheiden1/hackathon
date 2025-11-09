@@ -104,7 +104,7 @@ const StudentDoActivity = () => {
           </div>
 
           <Card className="p-8 shadow-hover border-border/50 mb-6">
-            <h2 className="text-2xl font-bold break-all text-foreground mb-6">{currentQuestion.question}</h2>
+            <h2 className="text-2xl font-bold break-words text-foreground mb-6">{currentQuestion.question}</h2>
 
             <div className="space-y-3">
               {currentQuestion.options.map((option, index) => (
