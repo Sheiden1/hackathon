@@ -47,7 +47,7 @@ const AddQuestion = () => {
     setAlternatives(alternatives.map(a => ({ ...a, isCorrect: a.id === id })));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (mode === "new") {
@@ -68,15 +68,94 @@ const AddQuestion = () => {
         { id: 4, text: "", isCorrect: false },
       ]);
     } else {
-      toast({
-        title: "Gerando questões",
-        description: "As questões estão sendo geradas a partir do arquivo.",
-      });
-      
-      setGenerateData({
-        file: null,
-        numberOfQuestions: 5,
-      });
+      if (!generateData.file) {
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione um arquivo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        toast({
+          title: "Enviando arquivo",
+          description: "Aguarde enquanto enviamos o arquivo...",
+        });
+
+        // 1. Upload do PDF para o Cloud Storage
+        const formData = new FormData();
+        formData.append("file", generateData.file);
+        formData.append("blob_path", `materiais/${Date.now()}_${generateData.file.name}`);
+        formData.append("bucket", "materiais-hackaton");
+
+        const uploadResponse = await fetch(
+          "https://backend-hackaton-2-739886072483.europe-west1.run.app/storage/gcs/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error("Erro ao fazer upload do arquivo");
+        }
+
+        const uploadResult = await uploadResponse.json();
+        const filePath = uploadResult.file.name || uploadResult.file.path;
+
+        toast({
+          title: "Gerando questões",
+          description: "Aguarde enquanto a IA processa o documento...",
+        });
+
+        // 2. Gerar e salvar questões
+        const generateResponse = await fetch(
+          "https://backend-hackaton-2-739886072483.europe-west1.run.app/question-generation/complete",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              bucket: "materiais-hackaton",
+              caminho_no_bucket: filePath,
+              qtd_questoes: generateData.numberOfQuestions,
+              serie: "ensino-medio",
+              modelo: "gemini-1.5-flash-002",
+              ineditas: true,
+              dpi: 150,
+              max_paginas: 10,
+              como_png: false,
+              qualidade_jpeg: 85,
+              tamanho_lote: 5,
+            }),
+          }
+        );
+
+        if (!generateResponse.ok) {
+          throw new Error("Erro ao gerar questões");
+        }
+
+        const result = await generateResponse.json();
+
+        toast({
+          title: "Questões geradas com sucesso!",
+          description: `${result.quantidade} questões foram adicionadas ao banco.`,
+        });
+
+        setGenerateData({
+          file: null,
+          numberOfQuestions: 5,
+        });
+      } catch (error) {
+        console.error("Erro:", error);
+        toast({
+          title: "Erro ao processar arquivo",
+          description: error instanceof Error ? error.message : "Tente novamente mais tarde.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
