@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 interface User {
   id: string;
@@ -14,63 +16,150 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => boolean;
-  signup: (userData: Omit<User, "id"> & { password: string }) => void;
-  logout: () => void;
+  session: Session | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ error?: string }>;
+  signup: (userData: Omit<User, "id"> & { password: string }) => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const login = (email: string, password: string) => {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const foundUser = users.find(
-      (u: any) => u.email === email && u.password === password
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (session?.user) {
+          // Fetch user profile data
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
     );
 
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-      navigate(foundUser.role === "student" ? "/student" : "/teacher");
-      return true;
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (data && !error) {
+      setUser({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        institution: data.institution,
+        subject: data.subject,
+        grade: data.grade,
+        class: data.class,
+      });
     }
-    return false;
   };
 
-  const signup = (userData: Omit<User, "id"> & { password: string }) => {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const newUser = {
-      ...userData,
-      id: Date.now().toString(),
-    };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
+  const login = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
-    navigate(userData.role === "student" ? "/student" : "/teacher");
+    if (error) {
+      return { error: error.message };
+    }
+
+    if (data.user) {
+      await fetchUserProfile(data.user.id);
+      const profile = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+      
+      if (profile.data) {
+        navigate(profile.data.role === "student" ? "/student" : "/teacher");
+      }
+    }
+
+    return {};
   };
 
-  const logout = () => {
+  const signup = async (userData: Omit<User, "id"> & { password: string }) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          name: userData.name,
+          role: userData.role,
+        }
+      }
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    if (data.user) {
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          institution: userData.institution,
+          subject: userData.subject,
+          grade: userData.grade,
+          class: userData.class,
+        });
+
+      if (profileError) {
+        return { error: profileError.message };
+      }
+
+      navigate(userData.role === "student" ? "/student" : "/teacher");
+    }
+
+    return {};
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("currentUser");
+    setSession(null);
     navigate("/auth");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

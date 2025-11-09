@@ -24,7 +24,7 @@ export const StudentSignupForm = ({ onBack, onToggleMode }: StudentSignupFormPro
   const { signup } = useAuth();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.password || !formData.grade || !formData.class) {
       toast({
@@ -34,10 +34,28 @@ export const StudentSignupForm = ({ onBack, onToggleMode }: StudentSignupFormPro
       });
       return;
     }
-    signup({
+
+    if (formData.password.length < 8) {
+      toast({
+        title: "Erro",
+        description: "A senha deve ter pelo menos 8 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await signup({
       ...formData,
       role: "student",
     });
+
+    if (error) {
+      toast({
+        title: "Erro ao criar conta",
+        description: error,
+        variant: "destructive",
+      });
+    }
   };
 
   return (

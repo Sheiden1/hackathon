@@ -20,13 +20,13 @@ export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
   const { login } = useAuth();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(formData.email, formData.password);
-    if (!success) {
+    const { error } = await login(formData.email, formData.password);
+    if (error) {
       toast({
         title: "Erro ao fazer login",
-        description: "Email ou senha incorretos.",
+        description: error,
         variant: "destructive",
       });
     }
