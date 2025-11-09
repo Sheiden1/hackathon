@@ -1,44 +1,57 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useBackendApi } from "@/hooks/useBackendApi";
+import { useNavigate } from "react-router-dom";
+
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  subject: string;
+}
 
 const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
   const { toast } = useToast();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const navigate = useNavigate();
+  const { get, loading } = useBackendApi();
   const [subject, setSubject] = useState("");
-  const [tasks, setTasks] = useState<string[]>([""]);
+  const [questionCount, setQuestionCount] = useState("5");
 
-  const addTask = () => {
-    setTasks([...tasks, ""]);
-  };
-
-  const removeTask = (index: number) => {
-    setTasks(tasks.filter((_, i) => i !== index));
-  };
-
-  const updateTask = (index: number, value: string) => {
-    const newTasks = [...tasks];
-    newTasks[index] = value;
-    setTasks(newTasks);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!subject || !questionCount) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione a matéria e quantidade de questões.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const questions = await get<Question[]>(`/questions?subject=${subject}&limit=${questionCount}`);
+    
+    if (!questions || questions.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível buscar as questões. Tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Atividade Criada",
-      description: "Sua atividade personalizada foi criada com sucesso!",
+      description: `Atividade com ${questions.length} questões criada com sucesso!`,
     });
-    setTitle("");
-    setDescription("");
-    setSubject("");
-    setTasks([""]);
+
+    navigate("/student/do-activity", { state: { questions } });
   };
 
   return (
@@ -62,21 +75,10 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
             Criar Atividade Personalizada
           </h1>
           <p className="text-muted-foreground mb-8">
-            Organize seus estudos criando suas próprias atividades
+            Escolha a matéria e quantidade de questões para sua atividade
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título da Atividade</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Revisão de Matemática"
-                required
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="subject">Matéria</Label>
               <Select value={subject} onValueChange={setSubject} required>
@@ -95,57 +97,29 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descreva o objetivo desta atividade"
-                rows={4}
-                required
-              />
+              <Label htmlFor="questionCount">Quantidade de Questões</Label>
+              <Select value={questionCount} onValueChange={setQuestionCount} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a quantidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 questões</SelectItem>
+                  <SelectItem value="10">10 questões</SelectItem>
+                  <SelectItem value="15">15 questões</SelectItem>
+                  <SelectItem value="20">20 questões</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Tarefas</Label>
-                <Button
-                  type="button"
-                  onClick={addTask}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Adicionar Tarefa
-                </Button>
-              </div>
-
-              {tasks.map((task, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={task}
-                    onChange={(e) => updateTask(index, e.target.value)}
-                    placeholder={`Tarefa ${index + 1}`}
-                    required
-                  />
-                  {tasks.length > 1 && (
-                    <Button
-                      type="button"
-                      onClick={() => removeTask(index)}
-                      variant="outline"
-                      size="icon"
-                      className="shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <Button type="submit" className="w-full">
-              Criar Atividade
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Carregando Questões...
+                </>
+              ) : (
+                "Criar Atividade"
+              )}
             </Button>
           </form>
         </Card>
