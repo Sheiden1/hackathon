@@ -59,20 +59,28 @@ const StudentDoActivity = () => {
 
     // Salvar tentativa no backend
     if (user?.id) {
-      const alternativesArray = currentQuestion.options.map((text, idx) => ({
-        text,
-        letter: indexToLetter(idx)
-      }));
+      try {
+        const alternativesArray = currentQuestion.options.map((text, idx) => ({
+          text,
+          letter: indexToLetter(idx)
+        }));
 
-      await post("/attempts", {
-        student_id: user.id,
-        question_id: currentQuestion.id,
-        question_statement: currentQuestion.question,
-        alternatives: alternativesArray,
-        correct_letter: indexToLetter(currentQuestion.correctAnswer),
-        selected_letter: indexToLetter(optionIndex),
-        materia: currentQuestion.subject,
-      });
+        const response = await post("/attempts", {
+          student_id: user.id,
+          question_id: currentQuestion.id,
+          question_statement: currentQuestion.question,
+          alternatives: alternativesArray,
+          correct_letter: indexToLetter(currentQuestion.correctAnswer),
+          selected_letter: indexToLetter(optionIndex),
+          materia: currentQuestion.subject,
+        });
+
+        if (!response) {
+          console.error("Erro ao salvar tentativa");
+        }
+      } catch (error) {
+        console.error("Erro ao salvar tentativa:", error);
+      }
     }
   };
 

@@ -41,7 +41,7 @@ interface Question {
   subject: string;
 }
 
-const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
+const transformApiQuestion = (apiQuestion: ApiQuestion, materia: string): Question => {
   // Encontrar o índice da resposta correta
   const correctAnswerIndex = apiQuestion.question.alternatives.findIndex(
     (alt) => alt.letter === apiQuestion.question.correct_answer,
@@ -52,7 +52,7 @@ const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
     question: apiQuestion.question.statement,
     options: apiQuestion.question.alternatives.map((alt) => alt.text),
     correctAnswer: correctAnswerIndex >= 0 ? correctAnswerIndex : 0,
-    subject: apiQuestion.difficulty, // ou outro campo apropriado
+    subject: materia,
   };
 };
 
@@ -112,7 +112,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
       }
 
       // Transformar as questões da API para o formato esperado pelo componente
-      const transformedQuestions = apiQuestions.map(transformApiQuestion);
+      const transformedQuestions = apiQuestions.map((q) => transformApiQuestion(q, subjectMap[subject] || subject));
       console.log("Questões transformadas:", transformedQuestions);
 
       toast({
