@@ -96,9 +96,9 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
               </div>
               <Slider
                 id="questionCount"
-                min={5}
-                max={20}
-                step={5}
+                min={1}
+                max={30}
+                step={1}
                 value={[questionCount]}
                 onValueChange={(value) => setQuestionCount(value[0])}
                 className="w-full"
