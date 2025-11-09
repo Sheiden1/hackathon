@@ -7,14 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileText, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [subject, setSubject] = useState("");
   const [activityType, setActivityType] = useState("");
   const [title, setTitle] = useState("");
   const [comments, setComments] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -26,17 +29,62 @@ const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Avaliação Enviada",
-      description: "Sua avaliação foi enviada com sucesso!",
-    });
-    setSubject("");
-    setActivityType("");
-    setTitle("");
-    setComments("");
-    setFiles([]);
+    
+    if (!user?.id) {
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para enviar avaliações.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    const uploadedFiles: string[] = [];
+
+    try {
+      // Upload de cada arquivo para o GCS
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("blob_path", `materiais/${user.id}/${Date.now()}_${file.name}`);
+        formData.append("bucket", "materiais-hackaton");
+
+        const response = await fetch("https://backend-hackaton-2-739886072483.europe-west1.run.app/storage/gcs/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro ao fazer upload de ${file.name}`);
+        }
+
+        const data = await response.json();
+        uploadedFiles.push(data.file.public_url || data.file.blob_path);
+      }
+
+      toast({
+        title: "Avaliação Enviada",
+        description: `Sua avaliação foi enviada com sucesso! ${uploadedFiles.length} arquivo(s) enviado(s).`,
+      });
+      
+      setSubject("");
+      setActivityType("");
+      setTitle("");
+      setComments("");
+      setFiles([]);
+    } catch (error) {
+      console.error("Erro ao enviar avaliação:", error);
+      toast({
+        title: "Erro ao Enviar",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao enviar a avaliação.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -175,8 +223,8 @@ const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={files.length === 0}>
-              Enviar Avaliação
+            <Button type="submit" className="w-full" disabled={files.length === 0 || uploading}>
+              {uploading ? "Enviando..." : "Enviar Avaliação"}
             </Button>
           </form>
         </Card>
