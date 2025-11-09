@@ -250,7 +250,7 @@ const AddQuestion = () => {
                     <Input
                       id="file"
                       type="file"
-                      className="w-full cursor-pointer file:cursor-pointer file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap"
+                      className="w-full h-12 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 text-sm text-muted-foreground"
                       onChange={(e) => setGenerateData({ ...generateData, file: e.target.files?.[0] || null })}
                       required
                     />
