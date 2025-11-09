@@ -10,6 +10,7 @@ interface User {
   role: "student" | "teacher";
   institution?: string;
   subject?: string;
+  subject_id?: string;
   grade?: string;
   class?: string;
 }
@@ -75,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: data.role,
         institution: data.institution,
         subject: data.subject,
+        subject_id: data.subject_id,
         grade: data.grade,
         class: data.class,
       });
@@ -137,6 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           role: userData.role,
           institution: userData.institution,
           subject: userData.subject,
+          subject_id: userData.subject_id,
           grade: userData.grade,
           class: userData.class,
         });

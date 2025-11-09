@@ -2,15 +2,23 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, FileUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, FileUp, BookMarked } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const TeacherDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false);
+  const [topicName, setTopicName] = useState("");
+  const { toast } = useToast();
 
   const menuOptions = [
     {
@@ -68,6 +76,47 @@ const TeacherDashboard = () => {
     };
     
     navigate(routes[optionId as keyof typeof routes]);
+  };
+
+  const handleAddTopic = async () => {
+    if (!topicName.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira um nome para o tópico.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user?.subject_id) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível identificar sua disciplina.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase.from("topics").insert({
+      name: topicName,
+      subject_id: user.subject_id,
+    });
+
+    if (error) {
+      console.error("Error adding topic:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o tópico.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Sucesso",
+        description: "Tópico adicionado com sucesso!",
+      });
+      setTopicName("");
+      setIsTopicDialogOpen(false);
+    }
   };
 
   return (
@@ -138,6 +187,47 @@ const TeacherDashboard = () => {
                 </div>
               </PopoverContent>
             </Popover>
+            <Dialog open={isTopicDialogOpen} onOpenChange={setIsTopicDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 hover:border-accent hover:text-accent transition-all hover:scale-105"
+                >
+                  <BookMarked className="h-4 w-4" />
+                  Adicionar Tópico
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Adicionar Novo Tópico</DialogTitle>
+                  <DialogDescription>
+                    Adicione um novo tópico à disciplina {user?.subject}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="topic-name">Nome do Tópico</Label>
+                    <Input
+                      id="topic-name"
+                      placeholder="Ex: Geometria Analítica"
+                      value={topicName}
+                      onChange={(e) => setTopicName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleAddTopic();
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsTopicDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleAddTopic}>Adicionar</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <Button
               onClick={() => navigate("/teacher/analytics")}
               variant="outline"

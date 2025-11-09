@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Lock, User, Building2, BookOpen, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface TeacherSignupFormProps {
   onBack: () => void;
@@ -13,20 +15,39 @@ interface TeacherSignupFormProps {
 
 export const TeacherSignupForm = ({ onBack, onToggleMode }: TeacherSignupFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [subjects, setSubjects] = useState<Array<{ id: string; name: string }>>([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     institution: "",
-    subject: "",
+    subject_id: "",
   });
 
   const { signup } = useAuth();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      const { data, error } = await supabase.from("subjects").select("id, name");
+      if (error) {
+        console.error("Error fetching subjects:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as disciplinas.",
+          variant: "destructive",
+        });
+      } else {
+        setSubjects(data || []);
+      }
+    };
+
+    fetchSubjects();
+  }, [toast]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password || !formData.institution || !formData.subject) {
+    if (!formData.name || !formData.email || !formData.password || !formData.institution || !formData.subject_id) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos.",
@@ -44,8 +65,15 @@ export const TeacherSignupForm = ({ onBack, onToggleMode }: TeacherSignupFormPro
       return;
     }
 
+    const selectedSubject = subjects.find(s => s.id === formData.subject_id);
+    
     const { error } = await signup({
-      ...formData,
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      institution: formData.institution,
+      subject: selectedSubject?.name || "",
+      subject_id: formData.subject_id,
       role: "teacher",
     });
 
@@ -158,18 +186,25 @@ export const TeacherSignupForm = ({ onBack, onToggleMode }: TeacherSignupFormPro
           <Label htmlFor="subject" className="text-foreground font-medium">
             Disciplina
           </Label>
-          <div className="relative group">
-            <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary transition-all group-focus-within:scale-110" />
-            <Input
-              id="subject"
-              type="text"
-              placeholder="Ex: Matemática, História..."
-              className="pl-10 h-12 bg-muted/30 border-border focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-              value={formData.subject}
-              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-              required
-            />
-          </div>
+          <Select
+            value={formData.subject_id}
+            onValueChange={(value) => setFormData({ ...formData, subject_id: value })}
+            required
+          >
+            <SelectTrigger className="h-12 bg-muted/30 border-border focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <SelectValue placeholder="Selecione uma disciplina" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {subjects.map((subject) => (
+                <SelectItem key={subject.id} value={subject.id}>
+                  {subject.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <Button
