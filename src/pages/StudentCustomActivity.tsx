@@ -44,13 +44,13 @@ interface Question {
 const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
   // Encontrar o índice da resposta correta
   const correctAnswerIndex = apiQuestion.question.alternatives.findIndex(
-    alt => alt.letter === apiQuestion.question.correct_answer
+    (alt) => alt.letter === apiQuestion.question.correct_answer,
   );
 
   return {
     id: apiQuestion.id,
     question: apiQuestion.question.statement,
-    options: apiQuestion.question.alternatives.map(alt => alt.text),
+    options: apiQuestion.question.alternatives.map((alt) => alt.text),
     correctAnswer: correctAnswerIndex >= 0 ? correctAnswerIndex : 0,
     subject: apiQuestion.difficulty, // ou outro campo apropriado
   };
@@ -69,7 +69,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
     ciencias: "Ciências",
     historia: "História",
     geografia: "Geografia",
-    ingles: "Inglês"
+    ingles: "Inglês",
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,9 +86,9 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
 
     try {
       const mappedSubject = subjectMap[subject] || subject;
-      console.log('Buscando questões:', { subject: mappedSubject, questionCount });
+      console.log("Buscando questões:", { subject: mappedSubject, questionCount });
       const response = await get<ApiResponse>(`/questions?materia=${mappedSubject}&limit=${questionCount}`);
-      console.log('Resposta da API:', response);
+      console.log("Resposta da API:", response);
 
       if (!response) {
         toast({
@@ -101,7 +101,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
 
       // Verificar se a resposta tem o formato esperado
       const apiQuestions = response.items || [];
-      
+
       if (apiQuestions.length === 0) {
         toast({
           title: "Nenhuma questão encontrada",
@@ -113,7 +113,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
 
       // Transformar as questões da API para o formato esperado pelo componente
       const transformedQuestions = apiQuestions.map(transformApiQuestion);
-      console.log('Questões transformadas:', transformedQuestions);
+      console.log("Questões transformadas:", transformedQuestions);
 
       toast({
         title: "Atividade Criada",
@@ -122,7 +122,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
 
       navigate("/student/do-activity", { state: { questions: transformedQuestions } });
     } catch (error) {
-      console.error('Erro ao criar atividade:', error);
+      console.error("Erro ao criar atividade:", error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao criar a atividade. Tente novamente.",
@@ -155,11 +155,11 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
                   <SelectValue placeholder="Selecione a matéria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="matematica">Matemática</SelectItem>
+                  <SelectItem value="Matemática">Matemática</SelectItem>
                   <SelectItem value="portugues">Português</SelectItem>
                   <SelectItem value="ciencias">Ciências</SelectItem>
                   <SelectItem value="historia">História</SelectItem>
-                  <SelectItem value="geografia">Geografia</SelectItem>
+                  <SelectItem value="Geografia">Geografia</SelectItem>
                   <SelectItem value="ingles">Inglês</SelectItem>
                 </SelectContent>
               </Select>
