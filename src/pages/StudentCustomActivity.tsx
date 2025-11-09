@@ -21,7 +21,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
   const navigate = useNavigate();
   const { get, loading } = useBackendApi();
   const [subject, setSubject] = useState("");
-  const [questionCount, setQuestionCount] = useState("1");
+  const [questionCount, setQuestionCount] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,12 +94,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a quantidade" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 questões</SelectItem>
-                  <SelectItem value="10">10 questões</SelectItem>
-                  <SelectItem value="15">15 questões</SelectItem>
-                  <SelectItem value="20">20 questões</SelectItem>
-                </SelectContent>
+                <Slider></Slider>
               </Select>
             </div>
 
