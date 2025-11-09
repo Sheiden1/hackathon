@@ -28,7 +28,7 @@ const Auth = () => {
               <BookOpen className="h-10 w-10 text-white" />
             </div>
             <h1 className="text-5xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
-              EduPlatform
+              Mentor
             </h1>
           </div>
           <p className="text-muted-foreground text-lg font-medium">Transformando educação através da tecnologia</p>
@@ -39,7 +39,7 @@ const Auth = () => {
         </div>
 
         <footer className="text-center mt-8 text-sm text-muted-foreground">
-          <p>© 2025 EduPlatform. Todos os direitos reservados.</p>
+          <p>© 2025 Mentor. Todos os direitos reservados.</p>
         </footer>
       </div>
     </div>
