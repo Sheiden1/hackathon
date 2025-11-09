@@ -88,10 +88,8 @@ const AddQuestion = () => {
         serie: "1 ano médio",
         modelo: "gemini-2.5-flash",
         ineditas: true,
-        dpi: 150,
+        dpi: 100,
         max_paginas: 10,
-        como_png: false,
-        qualidade_jpeg: 85,
         tamanho_lote: 5,
       };
 
