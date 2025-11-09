@@ -104,7 +104,7 @@ const StudentDoActivity = () => {
           </div>
 
           <Card className="p-8 shadow-hover border-border/50 mb-6">
-            <h2 className="text-2xl font-bold text-foreground mb-6">{currentQuestion.question}</h2>
+            <h2 className="text-2xl font-bold break-all text-foreground mb-6">{currentQuestion.question}</h2>
 
             <div className="space-y-3">
               {currentQuestion.options.map((option, index) => (
@@ -112,7 +112,7 @@ const StudentDoActivity = () => {
                   key={index}
                   onClick={() => handleAnswerClick(index)}
                   variant={getButtonVariant(index)}
-                  className="w-full justify-start break-all text-left h-auto py-4 px-6 transition-all"
+                  className="w-full justify-start text-left h-auto py-4 px-6 transition-all"
                   disabled={isAnswered}
                 >
                   <span className="flex-1">{option}</span>
