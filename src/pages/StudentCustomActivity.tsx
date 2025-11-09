@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBackendApi } from "@/hooks/useBackendApi";
@@ -21,7 +22,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
   const navigate = useNavigate();
   const { get, loading } = useBackendApi();
   const [subject, setSubject] = useState("");
-  const [questionCount, setQuestionCount] = useState("1");
+  const [questionCount, setQuestionCount] = useState(5);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,19 +89,26 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="questionCount">Quantidade de Questões</Label>
-              <Select value={questionCount} onValueChange={setQuestionCount} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a quantidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 questões</SelectItem>
-                  <SelectItem value="10">10 questões</SelectItem>
-                  <SelectItem value="15">15 questões</SelectItem>
-                  <SelectItem value="20">20 questões</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="questionCount">Quantidade de Questões</Label>
+                <span className="text-2xl font-bold text-primary">{questionCount}</span>
+              </div>
+              <Slider
+                id="questionCount"
+                min={5}
+                max={20}
+                step={5}
+                value={[questionCount]}
+                onValueChange={(value) => setQuestionCount(value[0])}
+                className="w-full"
+              />
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>5</span>
+                <span>10</span>
+                <span>15</span>
+                <span>20</span>
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
