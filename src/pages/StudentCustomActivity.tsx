@@ -36,7 +36,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
       return;
     }
 
-    const questions = await get<Question[]>(`/questions?subject=${subject}&limit=${questionCount}`);
+    const questions = await get<Question[]>(`/questions?materia=${subject}&limit=${questionCount}`);
 
     if (!questions || questions.length === 0) {
       toast({
