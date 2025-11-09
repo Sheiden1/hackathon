@@ -29,33 +29,33 @@ const AddQuestion = () => {
   ]);
 
   const handleAddAlternative = () => {
-    const newId = Math.max(...alternatives.map(a => a.id), 0) + 1;
+    const newId = Math.max(...alternatives.map((a) => a.id), 0) + 1;
     setAlternatives([...alternatives, { id: newId, text: "", isCorrect: false }]);
   };
 
   const handleRemoveAlternative = (id: number) => {
     if (alternatives.length > 2) {
-      setAlternatives(alternatives.filter(a => a.id !== id));
+      setAlternatives(alternatives.filter((a) => a.id !== id));
     }
   };
 
   const handleAlternativeChange = (id: number, text: string) => {
-    setAlternatives(alternatives.map(a => a.id === id ? { ...a, text } : a));
+    setAlternatives(alternatives.map((a) => (a.id === id ? { ...a, text } : a)));
   };
 
   const handleCorrectChange = (id: number) => {
-    setAlternatives(alternatives.map(a => ({ ...a, isCorrect: a.id === id })));
+    setAlternatives(alternatives.map((a) => ({ ...a, isCorrect: a.id === id })));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (mode === "new") {
       toast({
         title: "Questão adicionada com sucesso",
         description: "A questão foi salva no banco de questões.",
       });
-      
+
       setFormData({
         questionText: "",
         questionType: "multiple-choice",
@@ -94,7 +94,7 @@ const AddQuestion = () => {
           {
             method: "POST",
             body: formData,
-          }
+          },
         );
 
         if (!uploadResponse.ok) {
@@ -121,8 +121,8 @@ const AddQuestion = () => {
               bucket: "materiais-hackaton",
               caminho_no_bucket: filePath,
               qtd_questoes: generateData.numberOfQuestions,
-              serie: "ensino-medio",
-              modelo: "gemini-1.5-flash-002",
+              serie: "1 ano médio",
+              modelo: "gemini-2.5-flash",
               ineditas: true,
               dpi: 150,
               max_paginas: 10,
@@ -130,7 +130,7 @@ const AddQuestion = () => {
               qualidade_jpeg: 85,
               tamanho_lote: 5,
             }),
-          }
+          },
         );
 
         if (!generateResponse.ok) {
@@ -179,9 +179,7 @@ const AddQuestion = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-4xl font-display font-bold text-foreground">
-              Adicionar Questão
-            </h1>
+            <h1 className="text-4xl font-display font-bold text-foreground">Adicionar Questão</h1>
             <p className="text-muted-foreground font-medium mt-1">
               Monte seu banco de questões para provas e exercícios
             </p>
@@ -194,9 +192,7 @@ const AddQuestion = () => {
             <div className="inline-flex p-4 rounded-2xl bg-gradient-accent shadow-card mb-4">
               <Plus className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-              Adicionar Questão
-            </h2>
+            <h2 className="text-2xl font-display font-bold text-foreground mb-2">Adicionar Questão</h2>
             <p className="text-muted-foreground">
               Crie uma nova questão ou gere questões automaticamente a partir de um arquivo
             </p>
@@ -261,9 +257,7 @@ const AddQuestion = () => {
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label className="text-foreground font-medium">
-                      Alternativas
-                    </Label>
+                    <Label className="text-foreground font-medium">Alternativas</Label>
                     <Button
                       type="button"
                       variant="outline"
@@ -353,7 +347,9 @@ const AddQuestion = () => {
                     placeholder="Ex: 5"
                     className="bg-muted/30 border-border focus:ring-2 focus:ring-accent"
                     value={generateData.numberOfQuestions}
-                    onChange={(e) => setGenerateData({ ...generateData, numberOfQuestions: parseInt(e.target.value) || 5 })}
+                    onChange={(e) =>
+                      setGenerateData({ ...generateData, numberOfQuestions: parseInt(e.target.value) || 5 })
+                    }
                     required
                   />
                   <p className="text-sm text-muted-foreground">
@@ -364,18 +360,10 @@ const AddQuestion = () => {
             )}
 
             <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/teacher")}
-                className="flex-1"
-              >
+              <Button type="button" variant="outline" onClick={() => navigate("/teacher")} className="flex-1">
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-gradient-accent hover:shadow-hover text-white"
-              >
+              <Button type="submit" className="flex-1 bg-gradient-accent hover:shadow-hover text-white">
                 {mode === "new" ? "Salvar Questão" : "Gerar Questões"}
               </Button>
             </div>
