@@ -63,6 +63,15 @@ const CreateActivity = () => {
   const [subject, setSubject] = useState("");
   const [questionCount, setQuestionCount] = useState(5);
 
+  const subjectMap: Record<string, string> = {
+    matematica: "Matemática",
+    portugues: "Português",
+    ciencias: "Ciências",
+    historia: "História",
+    geografia: "Geografia",
+    ingles: "Inglês"
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -76,8 +85,9 @@ const CreateActivity = () => {
     }
 
     try {
-      console.log('Buscando questões:', { subject, questionCount });
-      const response = await get<ApiResponse>(`/questions?materia=${subject}&limit=${questionCount}`);
+      const mappedSubject = subjectMap[subject] || subject;
+      console.log('Buscando questões:', { subject: mappedSubject, questionCount });
+      const response = await get<ApiResponse>(`/questions?materia=${mappedSubject}&limit=${questionCount}`);
       console.log('Resposta da API:', response);
 
       if (!response) {
