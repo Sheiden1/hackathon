@@ -7,11 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileText, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 
 const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [subject, setSubject] = useState("");
   const [activityType, setActivityType] = useState("");
   const [title, setTitle] = useState("");
@@ -31,15 +29,6 @@ const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user?.id) {
-      toast({
-        title: "Erro",
-        description: "Você precisa estar logado para enviar avaliações.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     setUploading(true);
     const uploadedFiles: string[] = [];
@@ -49,7 +38,7 @@ const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
       for (const file of files) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("blob_path", `materiais/${user.id}/${Date.now()}_${file.name}`);
+        formData.append("blob_path", `materiais/${Date.now()}_${file.name}`);
         formData.append("bucket", "materiais-hackaton");
 
         const response = await fetch("https://backend-hackaton-2-739886072483.europe-west1.run.app/storage/gcs/upload", {
