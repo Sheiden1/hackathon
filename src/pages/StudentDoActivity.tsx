@@ -83,13 +83,13 @@ const StudentDoActivity = () => {
   };
 
   const submitActivity = async () => {
-    const score = (correctAnswers / questions.length) * 100;
+    const score = Math.round((correctAnswers / questions.length) * 100);
 
     // Se não há activityId, é uma atividade personalizada (não salva no banco)
     if (!activityId) {
       toast({
-        title: "Atividade Concluída!",
-        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${Math.round(score)}%)`,
+        title: "🎉 Atividade Concluída!",
+        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${score}%)`,
       });
       navigate("/student");
       return;
@@ -144,8 +144,8 @@ const StudentDoActivity = () => {
       if (answersError) throw answersError;
 
       toast({
-        title: "Atividade Concluída!",
-        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${Math.round(score)}%)`,
+        title: "🎉 Atividade Concluída!",
+        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${score}%)`,
       });
       
       navigate("/student");
@@ -170,10 +170,10 @@ const StudentDoActivity = () => {
   const getButtonIcon = (optionIndex: number) => {
     if (!isAnswered) return null;
     if (optionIndex === currentQuestion.correctAnswer) {
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      return <CheckCircle2 className="h-5 w-5 text-secondary" />;
     }
     if (optionIndex === selectedAnswer && selectedAnswer !== currentQuestion.correctAnswer) {
-      return <XCircle className="h-5 w-5 text-red-500" />;
+      return <XCircle className="h-5 w-5 text-destructive" />;
     }
     return null;
   };
@@ -206,7 +206,7 @@ const StudentDoActivity = () => {
                   key={index}
                   onClick={() => handleAnswerClick(index)}
                   variant={getButtonVariant(index)}
-                  className="w-full justify-start text-left h-auto py-4 px-6 transition-all whitespace-normal break-words"
+                  className="w-full justify-start text-left h-auto py-4 px-6 transition-all duration-300 whitespace-normal break-words hover:shadow-medium"
                   disabled={isAnswered}
                 >
                   <span className="flex-1 break-words">{option}</span>

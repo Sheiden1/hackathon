@@ -36,7 +36,7 @@ const AddQuestion = () => {
       console.log("Tipo do arquivo:", generateData.file.type);
 
       toast({
-        title: "Enviando arquivo",
+        title: "📤 Enviando arquivo",
         description: "Aguarde enquanto enviamos o arquivo...",
       });
 
@@ -76,7 +76,7 @@ const AddQuestion = () => {
       console.log("Upload result:", uploadResult);
 
       toast({
-        title: "Gerando questões",
+        title: "🤖 Gerando questões",
         description: "Aguarde enquanto a IA processa o documento...",
       });
 
@@ -124,7 +124,7 @@ const AddQuestion = () => {
       console.log("Generate result:", result);
 
       toast({
-        title: "Questões geradas com sucesso!",
+        title: "✅ Questões geradas com sucesso!",
         description: `${result.quantidade || generateData.numberOfQuestions} questões foram adicionadas ao banco.`,
       });
 

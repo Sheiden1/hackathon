@@ -134,7 +134,7 @@ const StudentDashboard = () => {
         </Card>
 
         {/* Menu Options */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
           {menuOptions.map((option, index) => (
             <Card
               key={option.id}
@@ -143,7 +143,7 @@ const StudentDashboard = () => {
               onClick={() => handleOptionClick(option.id)}
             >
               <div className="p-8">
-                <div className={`inline-flex p-4 rounded-2xl ${option.gradient} shadow-card mb-6 group-hover:scale-110 transition-all`}>
+                <div className={`inline-flex p-4 rounded-2xl ${option.gradient} shadow-card mb-6 group-hover:scale-110 transition-all duration-300`}>
                   <option.icon className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-xl font-display font-bold text-foreground mb-3 group-hover:text-primary transition-colors">

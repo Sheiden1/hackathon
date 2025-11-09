@@ -116,7 +116,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
       console.log("Questões transformadas:", transformedQuestions);
 
       toast({
-        title: "Atividade Criada",
+        title: "✅ Atividade Criada",
         description: `Atividade com ${transformedQuestions.length} questões criada com sucesso!`,
       });
 
@@ -155,11 +155,11 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
                   <SelectValue placeholder="Selecione a matéria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Matemática">Matemática</SelectItem>
+                  <SelectItem value="matematica">Matemática</SelectItem>
                   <SelectItem value="portugues">Português</SelectItem>
                   <SelectItem value="ciencias">Ciências</SelectItem>
                   <SelectItem value="historia">História</SelectItem>
-                  <SelectItem value="Geografia">Geografia</SelectItem>
+                  <SelectItem value="geografia">Geografia</SelectItem>
                   <SelectItem value="ingles">Inglês</SelectItem>
                 </SelectContent>
               </Select>
