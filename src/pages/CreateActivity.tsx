@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, FileEdit, Calendar, Users } from "lucide-react";
+import { ArrowLeft, FileEdit, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const CreateActivity = () => {
@@ -16,7 +16,6 @@ const CreateActivity = () => {
     title: "",
     description: "",
     type: "",
-    dueDate: "",
     class: "",
   });
 
@@ -32,7 +31,6 @@ const CreateActivity = () => {
       title: "",
       description: "",
       type: "",
-      dueDate: "",
       class: "",
     });
   };
@@ -110,39 +108,19 @@ const CreateActivity = () => {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="type" className="text-foreground font-medium">
-                  Tipo de Atividade
-                </Label>
-                <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                  <SelectTrigger className="h-12 bg-muted/30 border-border">
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="prova">Prova</SelectItem>
-                    <SelectItem value="trabalho">Trabalho</SelectItem>
-                    <SelectItem value="exercicio">Exercício</SelectItem>
-                    <SelectItem value="pesquisa">Pesquisa</SelectItem>
-                    <SelectItem value="projeto">Projeto</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dueDate" className="text-foreground font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-accent" />
-                  Data de Entrega
-                </Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  className="h-12 bg-muted/30 border-border focus:ring-2 focus:ring-accent"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-foreground font-medium">
+                Tipo de Atividade
+              </Label>
+              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                <SelectTrigger className="h-12 bg-muted/30 border-border">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="prova">Prova</SelectItem>
+                  <SelectItem value="exercicio">Exercício</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

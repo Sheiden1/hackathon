@@ -163,16 +163,16 @@ const TeacherDashboard = () => {
                   Envie documentos para gerar questões automaticamente
                 </p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="relative">
                 <Input
                   id="file-upload"
                   type="file"
-                  className="flex-1 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                  className="w-full cursor-pointer file:cursor-pointer file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 />
                 {selectedFile && (
-                  <p className="text-sm text-muted-foreground font-medium">
-                    {selectedFile.name}
+                  <p className="text-sm text-muted-foreground font-medium mt-2 truncate">
+                    Arquivo selecionado: {selectedFile.name}
                   </p>
                 )}
               </div>

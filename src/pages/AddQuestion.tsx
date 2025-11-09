@@ -246,15 +246,17 @@ const AddQuestion = () => {
                   <Label htmlFor="file" className="text-foreground font-medium">
                     Selecionar Arquivo
                   </Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    className="cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                    onChange={(e) => setGenerateData({ ...generateData, file: e.target.files?.[0] || null })}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="file"
+                      type="file"
+                      className="w-full cursor-pointer file:cursor-pointer file:mr-2 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap"
+                      onChange={(e) => setGenerateData({ ...generateData, file: e.target.files?.[0] || null })}
+                      required
+                    />
+                  </div>
                   {generateData.file && (
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-sm text-muted-foreground mt-2 truncate">
                       Arquivo selecionado: {generateData.file.name}
                     </p>
                   )}
