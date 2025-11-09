@@ -59,9 +59,17 @@ const StudentDoActivity = () => {
 
     // Salvar tentativa no backend
     if (user?.id) {
+      const alternativesArray = currentQuestion.options.map((text, idx) => ({
+        text,
+        letter: indexToLetter(idx)
+      }));
+
       await post("/attempts", {
         student_id: user.id,
         question_id: currentQuestion.id,
+        question_statement: currentQuestion.question,
+        alternatives: alternativesArray,
+        correct_letter: indexToLetter(currentQuestion.correctAnswer),
         selected_letter: indexToLetter(optionIndex),
         materia: currentQuestion.subject,
       });
