@@ -9,6 +9,30 @@ import { useToast } from "@/hooks/use-toast";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { useNavigate } from "react-router-dom";
 
+interface ApiQuestion {
+  id: string;
+  available: boolean;
+  subject_id: string | null;
+  created_by: string | null;
+  source_material_id: string | null;
+  difficulty: string;
+  question: {
+    statement: string;
+    alternatives: Array<{
+      text: string;
+      letter: string;
+    }>;
+    correct_answer: string | null;
+  };
+}
+
+interface ApiResponse {
+  items: ApiQuestion[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+}
+
 interface Question {
   id: string;
   question: string;
@@ -16,6 +40,21 @@ interface Question {
   correctAnswer: number;
   subject: string;
 }
+
+const transformApiQuestion = (apiQuestion: ApiQuestion): Question => {
+  // Encontrar o índice da resposta correta
+  const correctAnswerIndex = apiQuestion.question.alternatives.findIndex(
+    alt => alt.letter === apiQuestion.question.correct_answer
+  );
+
+  return {
+    id: apiQuestion.id,
+    question: apiQuestion.question.statement,
+    options: apiQuestion.question.alternatives.map(alt => alt.text),
+    correctAnswer: correctAnswerIndex >= 0 ? correctAnswerIndex : 0,
+    subject: apiQuestion.difficulty, // ou outro campo apropriado
+  };
+};
 
 const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
   const { toast } = useToast();
@@ -38,7 +77,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
 
     try {
       console.log('Buscando questões:', { subject, questionCount });
-      const response = await get<any>(`/questions?materia=${subject}&limit=${questionCount}`);
+      const response = await get<ApiResponse>(`/questions?materia=${subject}&limit=${questionCount}`);
       console.log('Resposta da API:', response);
 
       if (!response) {
@@ -51,9 +90,9 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
       }
 
       // Verificar se a resposta tem o formato esperado
-      const questions = Array.isArray(response) ? response : response.items || [];
+      const apiQuestions = response.items || [];
       
-      if (questions.length === 0) {
+      if (apiQuestions.length === 0) {
         toast({
           title: "Nenhuma questão encontrada",
           description: "Não há questões disponíveis para esta matéria.",
@@ -62,14 +101,16 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
         return;
       }
 
-      console.log('Questões recebidas:', questions);
+      // Transformar as questões da API para o formato esperado pelo componente
+      const transformedQuestions = apiQuestions.map(transformApiQuestion);
+      console.log('Questões transformadas:', transformedQuestions);
 
       toast({
         title: "Atividade Criada",
-        description: `Atividade com ${questions.length} questões criada com sucesso!`,
+        description: `Atividade com ${transformedQuestions.length} questões criada com sucesso!`,
       });
 
-      navigate("/student/do-activity", { state: { questions } });
+      navigate("/student/do-activity", { state: { questions: transformedQuestions } });
     } catch (error) {
       console.error('Erro ao criar atividade:', error);
       toast({
