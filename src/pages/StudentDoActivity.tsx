@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useBackendApi } from "@/hooks/useBackendApi";
+import { supabase } from "@/lib/supabase";
 
 interface Question {
   id: string;
@@ -21,13 +21,15 @@ const StudentDoActivity = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { post } = useBackendApi();
   const questions = (location.state?.questions as Question[]) || [];
+  const activityId = location.state?.activityId;
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [studentAnswers, setStudentAnswers] = useState<Array<{ questionId: string; answer: string; isCorrect: boolean }>>([]);
 
   const indexToLetter = (index: number): string => {
     return String.fromCharCode(65 + index); // 0='A', 1='B', 2='C', etc.
@@ -53,48 +55,95 @@ const StudentDoActivity = () => {
     setSelectedAnswer(optionIndex);
     setIsAnswered(true);
 
-    if (optionIndex === currentQuestion.correctAnswer) {
+    const isCorrect = optionIndex === currentQuestion.correctAnswer;
+    if (isCorrect) {
       setCorrectAnswers(correctAnswers + 1);
     }
 
-    // Salvar tentativa no backend
-    if (user?.id) {
-      try {
-        const alternativesArray = currentQuestion.options.map((text, idx) => ({
-          text,
-          letter: indexToLetter(idx)
-        }));
-
-        const response = await post("/attempts", {
-          student_id: user.id,
-          question_id: currentQuestion.id,
-          question_statement: currentQuestion.question,
-          alternatives: alternativesArray,
-          correct_letter: indexToLetter(currentQuestion.correctAnswer),
-          selected_letter: indexToLetter(optionIndex),
-          materia: currentQuestion.subject,
-        });
-
-        if (!response) {
-          console.error("Erro ao salvar tentativa");
-        }
-      } catch (error) {
-        console.error("Erro ao salvar tentativa:", error);
-      }
-    }
+    // Armazenar resposta para salvar depois
+    setStudentAnswers([
+      ...studentAnswers,
+      {
+        questionId: currentQuestion.id,
+        answer: indexToLetter(optionIndex),
+        isCorrect,
+      },
+    ]);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setIsAnswered(false);
     } else {
-      // Atividade finalizada
-      const score = Math.round((correctAnswers / questions.length) * 100);
+      // Atividade finalizada - salvar submissão
+      await submitActivity();
+    }
+  };
+
+  const submitActivity = async () => {
+    if (!user?.id || !activityId) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar a submissão.",
+        variant: "destructive",
+      });
+      navigate("/student");
+      return;
+    }
+
+    try {
+      const score = (correctAnswers / questions.length) * 100;
+
+      // Criar submissão
+      const { data: submission, error: submissionError } = await supabase
+        .from("activity_submissions")
+        .insert({
+          activity_id: activityId,
+          student_id: user.id,
+          status: "pending",
+          score: score,
+        })
+        .select()
+        .single();
+
+      if (submissionError) throw submissionError;
+
+      // Salvar todas as respostas
+      const answersToInsert = studentAnswers.map((answer) => ({
+        submission_id: submission.id,
+        question_id: answer.questionId,
+        selected_answer: answer.answer,
+        is_correct: answer.isCorrect,
+      }));
+
+      // Adicionar a última resposta (a atual)
+      answersToInsert.push({
+        submission_id: submission.id,
+        question_id: currentQuestion.id,
+        selected_answer: indexToLetter(selectedAnswer!),
+        is_correct: selectedAnswer === currentQuestion.correctAnswer,
+      });
+
+      const { error: answersError } = await supabase
+        .from("student_answers")
+        .insert(answersToInsert);
+
+      if (answersError) throw answersError;
+
       toast({
         title: "Atividade Concluída!",
-        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${score}%)`,
+        description: `Você acertou ${correctAnswers} de ${questions.length} questões (${Math.round(score)}%)`,
+      });
+      
+      navigate("/student");
+    } catch (error: any) {
+      console.error("Erro ao salvar submissão:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar sua submissão.",
+        variant: "destructive",
       });
       navigate("/student");
     }

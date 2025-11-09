@@ -14,7 +14,231 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          subject_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          subject_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          subject_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_questions: {
+        Row: {
+          activity_id: string
+          created_at: string
+          id: string
+          question_id: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_questions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_submissions: {
+        Row: {
+          activity_id: string
+          feedback: string | null
+          id: string
+          score: number | null
+          status: string
+          student_id: string
+          submitted_at: string
+        }
+        Insert: {
+          activity_id: string
+          feedback?: string | null
+          id?: string
+          score?: number | null
+          status?: string
+          student_id: string
+          submitted_at?: string
+        }
+        Update: {
+          activity_id?: string
+          feedback?: string | null
+          id?: string
+          score?: number | null
+          status?: string
+          student_id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_submissions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          created_by: string | null
+          difficulty: string | null
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          subject_id: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          created_by?: string | null
+          difficulty?: string | null
+          id?: string
+          option_a: string
+          option_b: string
+          option_c: string
+          option_d: string
+          question_text: string
+          subject_id: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          created_by?: string | null
+          difficulty?: string | null
+          id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          option_d?: string
+          question_text?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_answers: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_answer: string
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct: boolean
+          question_id: string
+          selected_answer: string
+          submission_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_answer?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_answers_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "activity_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, FileUp } from "lucide-react";
+import { GraduationCap, CheckCircle, FileEdit, Plus, LogOut, Sparkles, BarChart3, FileUp, Database } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 
@@ -41,6 +41,13 @@ const TeacherDashboard = () => {
       icon: CheckCircle,
       gradient: "bg-gradient-to-br from-green-500 via-emerald-400 to-green-500",
     },
+    {
+      id: "populate-questions",
+      title: "Gerar Questões com IA",
+      description: "Popule o banco de dados com questões geradas automaticamente",
+      icon: Database,
+      gradient: "bg-gradient-to-br from-purple-500 via-violet-400 to-purple-500",
+    },
   ];
 
   const handleFileClick = () => {
@@ -64,7 +71,8 @@ const TeacherDashboard = () => {
     const routes = {
       "correct-assessment": "/teacher/correct-assessment",
       "create-activity": "/teacher/create-activity",
-      "add-question": "/teacher/add-question"
+      "add-question": "/teacher/add-question",
+      "populate-questions": "/teacher/populate-questions"
     };
     
     navigate(routes[optionId as keyof typeof routes]);

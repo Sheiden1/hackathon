@@ -1,78 +1,127 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+
+interface Activity {
+  id: string;
+  title: string;
+  description: string;
+  subject_id: string;
+  subjects: {
+    name: string;
+  } | null;
+}
 
 const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [selectedActivity, setSelectedActivity] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const [subject, setSubject] = useState("");
-  const [activityType, setActivityType] = useState("");
-  const [title, setTitle] = useState("");
-  const [comments, setComments] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles([...files, ...Array.from(e.target.files)]);
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    const { data, error } = await supabase
+      .from("activities")
+      .select(`
+        id,
+        title,
+        description,
+        subject_id,
+        subjects!inner (
+          name
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Erro ao buscar atividades:", error);
+      return;
     }
+
+    // Transformar os dados para o formato correto
+    const transformedData = data?.map(activity => ({
+      ...activity,
+      subjects: Array.isArray(activity.subjects) ? activity.subjects[0] : activity.subjects
+    })) as Activity[];
+
+    setActivities(transformedData || []);
   };
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-  };
+  const handleSubmit = async () => {
+    if (!selectedActivity) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma atividade.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    if (!user?.id) {
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para submeter uma atividade.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setUploading(true);
-    const uploadedFiles: string[] = [];
+    setIsSubmitting(true);
 
     try {
-      // Upload de cada arquivo para o GCS
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("blob_path", `materiais/${Date.now()}_${file.name}`);
-        formData.append("bucket", "materiais-hackaton");
+      // Buscar as questões da atividade
+      const { data: activityQuestions, error: questionsError } = await supabase
+        .from("activity_questions")
+        .select(`
+          question_id,
+          questions (
+            id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer
+          )
+        `)
+        .eq("activity_id", selectedActivity);
 
-        const response = await fetch("https://backend-hackaton-2-739886072483.europe-west1.run.app/storage/gcs/upload", {
-          method: "POST",
-          body: formData,
-        });
+      if (questionsError) throw questionsError;
 
-        if (!response.ok) {
-          throw new Error(`Erro ao fazer upload de ${file.name}`);
-        }
+      // Redirecionar para fazer a atividade
+      const questions = activityQuestions?.map((aq: any) => ({
+        id: aq.questions.id,
+        question: aq.questions.question_text,
+        options: [
+          aq.questions.option_a,
+          aq.questions.option_b,
+          aq.questions.option_c,
+          aq.questions.option_d,
+        ],
+        correctAnswer: ["A", "B", "C", "D"].indexOf(aq.questions.correct_answer),
+        subject: "",
+      }));
 
-        const data = await response.json();
-        uploadedFiles.push(data.file.public_url || data.file.blob_path);
-      }
-
+      navigate("/student/do-activity", { state: { questions, activityId: selectedActivity } });
+    } catch (error: any) {
+      console.error("Erro ao buscar questões:", error);
       toast({
-        title: "Avaliação Enviada",
-        description: `Sua avaliação foi enviada com sucesso! ${uploadedFiles.length} arquivo(s) enviado(s).`,
-      });
-      
-      setSubject("");
-      setActivityType("");
-      setTitle("");
-      setComments("");
-      setFiles([]);
-    } catch (error) {
-      console.error("Erro ao enviar avaliação:", error);
-      toast({
-        title: "Erro ao Enviar",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao enviar a avaliação.",
+        title: "Erro",
+        description: "Não foi possível carregar a atividade.",
         variant: "destructive",
       });
     } finally {
-      setUploading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -89,134 +138,65 @@ const StudentSubmitAssessment = ({ onBack }: { onBack: () => void }) => {
           variant="outline"
           className="mb-6 hover:scale-105 transition-all"
         >
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar ao Dashboard
         </Button>
 
-        <Card className="p-8 shadow-hover border-border/50">
+        <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-            Entregar Avaliação
+            Fazer Atividade
           </h1>
           <p className="text-muted-foreground mb-8">
-            Envie suas avaliações e trabalhos concluídos
+            Selecione uma atividade para começar
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="subject">Matéria</Label>
-                <Select value={subject} onValueChange={setSubject} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a matéria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="matematica">Matemática</SelectItem>
-                    <SelectItem value="portugues">Português</SelectItem>
-                    <SelectItem value="ciencias">Ciências</SelectItem>
-                    <SelectItem value="historia">História</SelectItem>
-                    <SelectItem value="geografia">Geografia</SelectItem>
-                    <SelectItem value="ingles">Inglês</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="activityType">Tipo de Atividade</Label>
-                <Select value={activityType} onValueChange={setActivityType} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="prova">Prova</SelectItem>
-                    <SelectItem value="trabalho">Trabalho</SelectItem>
-                    <SelectItem value="exercicio">Lista de Exercícios</SelectItem>
-                    <SelectItem value="projeto">Projeto</SelectItem>
-                    <SelectItem value="redacao">Redação</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="title">Título da Avaliação</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Prova Bimestral - Capítulo 3"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="comments">Comentários (opcional)</Label>
-              <Textarea
-                id="comments"
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                placeholder="Adicione observações sobre a entrega"
-                rows={4}
-              />
-            </div>
-
+          <Card className="p-8 shadow-hover border-border/50">
+            <h3 className="text-xl font-bold text-foreground mb-6">Atividades Disponíveis</h3>
+            
             <div className="space-y-4">
-              <Label>Arquivos</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
-                <input
-                  type="file"
-                  id="file-upload"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  multiple
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                />
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer flex flex-col items-center gap-2"
-                >
-                  <Upload className="h-10 w-10 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Clique para fazer upload ou arraste os arquivos
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    PDF, DOC, DOCX, JPG, PNG (máx. 10MB)
-                  </p>
-                </label>
-              </div>
-
-              {files.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Arquivos Selecionados</Label>
-                  {files.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                    >
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm text-foreground">{file.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({(file.size / 1024).toFixed(2)} KB)
+              {activities.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Nenhuma atividade disponível no momento.
+                </p>
+              ) : (
+                activities.map((activity) => (
+                  <Card
+                    key={activity.id}
+                    className={`p-4 cursor-pointer transition-all border-2 ${
+                      selectedActivity === activity.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border/50 hover:border-primary/30"
+                    }`}
+                    onClick={() => setSelectedActivity(activity.id)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-bold text-foreground mb-1">{activity.title}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {activity.description}
+                        </p>
+                        <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-secondary/20 text-secondary-foreground">
+                          {activity.subjects?.name}
                         </span>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      {selectedActivity === activity.id && (
+                        <CheckCircle2 className="h-5 w-5 text-primary ml-4" />
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </Card>
+                ))
               )}
-            </div>
 
-            <Button type="submit" className="w-full" disabled={files.length === 0 || uploading}>
-              {uploading ? "Enviando..." : "Enviar Avaliação"}
-            </Button>
-          </form>
-        </Card>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !selectedActivity}
+                className="w-full mt-6"
+              >
+                {isSubmitting ? "Carregando..." : "Fazer Atividade"}
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import TeacherAnalytics from "./pages/TeacherAnalytics";
 import CorrectAssessment from "./pages/CorrectAssessment";
 import CreateActivity from "./pages/CreateActivity";
 import AddQuestion from "./pages/AddQuestion";
+import PopulateQuestions from "./pages/PopulateQuestions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/teacher/correct-assessment" element={<CorrectAssessment />} />
             <Route path="/teacher/create-activity" element={<CreateActivity />} />
             <Route path="/teacher/add-question" element={<AddQuestion />} />
+            <Route path="/teacher/populate-questions" element={<PopulateQuestions />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
