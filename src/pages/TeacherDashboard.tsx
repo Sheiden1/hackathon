@@ -139,14 +139,6 @@ const TeacherDashboard = () => {
               </PopoverContent>
             </Popover>
             <Button
-              onClick={() => navigate("/teacher/analytics")}
-              variant="outline"
-              className="flex items-center gap-2 hover:border-primary hover:text-primary transition-all hover:scale-105"
-            >
-              <BarChart3 className="h-4 w-4" />
-              Dashboard
-            </Button>
-            <Button
               onClick={logout}
               variant="outline"
               className="flex items-center gap-2 hover:border-destructive hover:text-destructive transition-all hover:scale-105"
