@@ -46,7 +46,10 @@ const CorrectAssessment = () => {
     : [];
 
   const handleCorrect = (assessmentId: number) => {
-    setSelectedAssessment(assessmentId);
+    toast({
+      title: "Prova sendo corrigida pela nossa IA",
+      description: "Aguarde enquanto processamos a correção automaticamente.",
+    });
   };
 
   const handleSubmitCorrection = (e: React.FormEvent) => {
