@@ -21,7 +21,7 @@ export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    #e.preventDefault();
     const { error } = await login(formData.email, formData.password);
     if (error) {
       toast({
@@ -84,10 +84,7 @@ export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
         </div>
 
         <div className="flex items-center justify-end">
-          <button
-            type="button"
-            className="text-sm text-primary hover:text-primary-hover font-medium transition-colors"
-          >
+          <button type="button" className="text-sm text-primary hover:text-primary-hover font-medium transition-colors">
             Esqueci minha senha
           </button>
         </div>
