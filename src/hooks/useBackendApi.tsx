@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const BASE_URL = "https://backend-hackaton-2-739886072483.europe-west1.run.app/";
+const BASE_URL = "https://backend-hackaton-2-739886072483.europe-west1.run.app";
 
 export const useBackendApi = () => {
   const [loading, setLoading] = useState(false);

@@ -21,11 +21,11 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
   const navigate = useNavigate();
   const { get, loading } = useBackendApi();
   const [subject, setSubject] = useState("");
-  const [questionCount, setQuestionCount] = useState("5");
+  const [questionCount, setQuestionCount] = useState("1");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!subject || !questionCount) {
       toast({
         title: "Erro",
@@ -36,7 +36,7 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
     }
 
     const questions = await get<Question[]>(`/questions?subject=${subject}&limit=${questionCount}`);
-    
+
     if (!questions || questions.length === 0) {
       toast({
         title: "Erro",
@@ -62,21 +62,13 @@ const StudentCustomActivity = ({ onBack }: { onBack: () => void }) => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="mb-6 hover:scale-105 transition-all"
-        >
+        <Button onClick={onBack} variant="outline" className="mb-6 hover:scale-105 transition-all">
           Voltar ao Dashboard
         </Button>
 
         <Card className="p-8 shadow-hover border-border/50">
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-            Criar Atividade Personalizada
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            Escolha a matéria e quantidade de questões para sua atividade
-          </p>
+          <h1 className="text-3xl font-display font-bold text-foreground mb-2">Criar Atividade Personalizada</h1>
+          <p className="text-muted-foreground mb-8">Escolha a matéria e quantidade de questões para sua atividade</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
